@@ -1,9 +1,7 @@
 import React, { useCallback, useRef } from 'react';
-
-import { v4 as uuid } from 'uuid';
+import { TextInput } from 'react-native';
 import { FormHandles } from '@unform/core';
 import { Form } from '@unform/mobile';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { Container } from './styles';
 import Header from '../../components/Header';
@@ -15,51 +13,42 @@ import SubButtonLink from '../../components/SubButtonLink';
 import { Label } from '../../components/Label/styles';
 
 import { usePopup } from '../../hooks/popup';
+import { useCategories } from '../../hooks/categories';
 
 interface CategoryFormData {
   type: 'gasto' | 'entrada';
   name: string;
 }
 
-interface CategoryStorage {
-  categories: { id: string; name: string; type: 'gasto' | 'entrada' }[];
-}
-
 const AddCategory: React.FC = () => {
   const { navigate } = useNavigation();
   const { showPopup } = usePopup();
+  const { addCategory } = useCategories();
   const formRef = useRef<FormHandles>(null);
+  const nameInputRef = useRef<TextInput>(null);
 
   const handleSubmit = useCallback(
     async (data: CategoryFormData) => {
-      const key = `@GoFinance:${data.type}`;
-      const catsJson = await AsyncStorage.getItem(key);
-      const cats: CategoryStorage = catsJson
-        ? JSON.parse(catsJson)
-        : { categories: [] };
-
-      const newCats: CategoryStorage = {
-        categories: [
-          {
-            id: uuid(),
-            name: data.name,
-            type: data.type,
-          },
-          ...cats.categories,
-        ],
-      };
-
-      await AsyncStorage.setItem(key, JSON.stringify(newCats));
-
-      showPopup({
-        title: 'Categoria adicionada',
-        type: 'check',
-        description: `A categoria [${data.name}] foi adicionada ${
-          data.type === 'gasto' ? 'aos gastos' : 'às entradas'
-        }`,
-      });
+      if (data.name.length === 0) {
+        showPopup({
+          title: 'Digite o nome da categoria',
+          type: 'x',
+          description: `Você deve digitar o nome da categoria que será adicionada.`,
+        });
+        return;
+      }
+      if (data.type.length === 0) {
+        showPopup({
+          title: 'Selecione o tipo da categoria',
+          type: 'x',
+          description: `Você deve selecionar o tipo da categoria.`,
+        });
+        return;
+      }
+      addCategory(data.name, data.type);
+      formRef.current?.clearField('name');
     },
-    [showPopup],
+    [addCategory, showPopup],
   );
 
   const goToCategoryRemove = useCallback(() => {
@@ -89,7 +78,11 @@ const AddCategory: React.FC = () => {
           addRemoveOption={false}
         />
         <Label>Nome da categoria:</Label>
-        <Input name="name" placeholder="Digite o nome da categoria" />
+        <Input
+          ref={nameInputRef}
+          name="name"
+          placeholder="Digite o nome da categoria"
+        />
         <Button
           onPress={() => formRef.current?.submitForm()}
           containerStyle={{ marginTop: 32 }}

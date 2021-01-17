@@ -16,7 +16,8 @@ import Header from '../../components/Header';
 import SubButtonLink from '../../components/SubButtonLink';
 import Tip from '../../components/Tip';
 
-import { usePopup } from '../../hooks/popup';
+import { useCategories } from '../../hooks/categories';
+
 import Button from '../../components/Button';
 
 interface CategoryStorage {
@@ -29,7 +30,7 @@ interface MarkedForRemove {
 
 const RemoveCategory: React.FC = () => {
   const { navigate } = useNavigation();
-  const { showPopup } = usePopup();
+  const { getCategories, removeCategories } = useCategories();
 
   const [categoriesGasto, setCategoriesGasto] = useState<CategoryStorage>({
     categories: [],
@@ -50,63 +51,8 @@ const RemoveCategory: React.FC = () => {
   );
 
   const handleRemoveCategories = useCallback(async () => {
-    if (categoriesSelected.ids.length > 0) {
-      const keyGasto = `@GoFinance:gasto`;
-      const keyEntrada = `@GoFinance:entrada`;
-
-      const newCatsGasto = categoriesGasto.categories.filter(item => {
-        if (
-          categoriesSelected.ids.find(selected => {
-            return item.id === selected;
-          })
-        ) {
-          return false;
-        }
-
-        return true;
-      });
-      const newCatsEntrada = categoriesEntrada.categories.filter(item => {
-        if (
-          categoriesSelected.ids.find(selected => {
-            return item.id === selected;
-          })
-        ) {
-          return false;
-        }
-
-        return true;
-      });
-
-      setCategoriesEntrada({ categories: newCatsEntrada });
-      setCategoriesGasto({ categories: newCatsGasto });
-
-      await AsyncStorage.setItem(
-        keyGasto,
-        JSON.stringify({ categories: newCatsEntrada }),
-      );
-      await AsyncStorage.setItem(
-        keyEntrada,
-        JSON.stringify({ categories: newCatsGasto }),
-      );
-
-      showPopup({
-        title: 'Categoria(s) removida(s)',
-        type: 'check',
-        description: `A(s) categoria(s) selecionada(s) foram removida(s).`,
-      });
-    } else {
-      showPopup({
-        title: 'Selecione as categorias',
-        type: 'x',
-        description: `Você deve selecionar uma ou mais categorias para serem removidas.`,
-      });
-    }
-  }, [
-    categoriesEntrada.categories,
-    categoriesGasto.categories,
-    categoriesSelected,
-    showPopup,
-  ]);
+    removeCategories(categoriesSelected.ids);
+  }, [categoriesSelected.ids, removeCategories]);
 
   const goToAddCategory = useCallback(() => {
     navigate('AddCategory');
@@ -114,21 +60,17 @@ const RemoveCategory: React.FC = () => {
 
   useEffect(() => {
     async function loadCategories() {
-      const keyGastos = '@GoFinance:gasto';
-      const keyEntradas = '@GoFinance:entrada';
+      const cats = getCategories();
 
-      const catsGasto = await AsyncStorage.getItem(keyGastos);
-      const catsEntrada = await AsyncStorage.getItem(keyEntradas);
-
-      if (catsGasto) {
-        setCategoriesGasto(JSON.parse(catsGasto));
+      if (cats.expenses) {
+        setCategoriesGasto(cats.expenses);
       }
-      if (catsEntrada) {
-        setCategoriesEntrada(JSON.parse(catsEntrada));
+      if (cats.incomes) {
+        setCategoriesEntrada(cats.incomes);
       }
     }
     loadCategories();
-  }, []);
+  }, [getCategories]);
 
   const handleCategoryPress = useCallback(
     (id: string, type: string) => {

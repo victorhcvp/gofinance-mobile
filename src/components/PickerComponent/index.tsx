@@ -37,6 +37,10 @@ const PickerComponent: React.FC<PickerProps> = ({
         navigate('AddCategory');
         return;
       }
+      if (itemValue === 'remove') {
+        navigate('RemoveCategory');
+        return;
+      }
       if (pickerRef.current) {
         pickerRef.current.value = itemValue;
       }
@@ -84,7 +88,12 @@ const PickerComponent: React.FC<PickerProps> = ({
       >
         <Picker.Item color="gray" label={placeholder} value="" />
         {itemList.map(item => (
-          <Picker.Item key={item.value} label={item.label} value={item.value} />
+          <Picker.Item
+            color="black"
+            key={item.value}
+            label={item.label}
+            value={item.value}
+          />
         ))}
         <Picker.Item
           color="green"

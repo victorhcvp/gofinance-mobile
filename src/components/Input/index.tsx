@@ -1,4 +1,10 @@
-import React, { forwardRef, useCallback, useEffect, useRef } from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from 'react';
 import { TextInputProps } from 'react-native';
 import { useField } from '@unform/core';
 import { Container, TextInput } from './styles';
@@ -11,9 +17,12 @@ interface InputValueReference {
   value: string;
 }
 
-const Input: React.ForwardRefRenderFunction<TextInputProps, InputProps> = (
+interface InputRef {
+  focus(): void;
+}
+
+const Input: React.ForwardRefRenderFunction<InputRef, InputProps> = (
   { name, onChangeText, ...rest },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ref,
 ) => {
   const inputRef = useRef<any>(null);
@@ -25,16 +34,22 @@ const Input: React.ForwardRefRenderFunction<TextInputProps, InputProps> = (
     inputRef.current.value = defaultValue;
   }, [defaultValue]);
 
+  useImperativeHandle(ref, () => ({
+    focus() {
+      inputRef.current.focus();
+    },
+  }));
+
   useEffect(() => {
     registerField<string>({
       name: fieldName,
-      ref: inputRef.current,
+      ref: inputValueRef.current,
       path: 'value',
       clearValue() {
         inputValueRef.current.value = '';
         inputRef.current.clear();
       },
-      setValue(value) {
+      setValue(reference: any, value) {
         inputValueRef.current.value = value;
         inputRef.current.setNativeProps({ text: value });
       },
@@ -45,6 +60,7 @@ const Input: React.ForwardRefRenderFunction<TextInputProps, InputProps> = (
     value => {
       if (inputRef.current) {
         inputRef.current.value = value;
+        inputValueRef.current.value = value;
       }
       if (onChangeText) onChangeText(value);
     },

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
@@ -13,8 +13,21 @@ import Input from '../../components/Input';
 import PickerComponent from '../../components/PickerComponent';
 import InputMask from '../../components/InputMask';
 
+import { useCategories } from '../../hooks/categories';
+
+interface CategoriesForPicker {
+  label: string;
+  value: string;
+}
+
 const AddExpense: React.FC = () => {
+  const { getCategories } = useCategories();
   const formRef = useRef<FormHandles>(null);
+
+  const [
+    categoriesExpensesForPicker,
+    setCategoriesExpensesForPicker,
+  ] = useState<CategoriesForPicker[]>([]);
 
   const [checkboxRecurring, setCheckboxRecurring] = useState(false);
 
@@ -24,16 +37,23 @@ const AddExpense: React.FC = () => {
     setCheckboxRecurring(newValue);
   }, []);
 
-  const itemList = [
-    {
-      label: 'Gasto Fixo',
-      value: 'fixo',
-    },
-    {
-      label: 'Parcelamentos',
-      value: 'parcelamentos',
-    },
-  ];
+  useEffect(() => {
+    async function loadCategories() {
+      const cats = getCategories();
+
+      if (cats.expenses) {
+        setCategoriesExpensesForPicker(
+          cats.expenses.categories.map(item => {
+            return {
+              label: item.name,
+              value: item.id,
+            };
+          }),
+        );
+      }
+    }
+    loadCategories();
+  }, [getCategories]);
 
   return (
     <Container>
@@ -48,7 +68,7 @@ const AddExpense: React.FC = () => {
           <PickerComponent
             name="category"
             placeholder="Toque para escolher a categoria do gasto"
-            itemList={itemList}
+            itemList={categoriesExpensesForPicker}
             addRemoveOption
           />
           <Label>Nome do gasto:</Label>
@@ -90,7 +110,7 @@ const AddExpense: React.FC = () => {
             <>
               <Label>Quando é a primeira?</Label>
               <PickerComponent
-                itemList={itemList}
+                itemList={categoriesExpensesForPicker}
                 placeholder="Selecione a primeira"
                 name="first"
               />
