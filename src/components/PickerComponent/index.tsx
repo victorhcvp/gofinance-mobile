@@ -28,7 +28,7 @@ const PickerComponent: React.FC<PickerProps> = ({
   const [selectedValue, setSelectedValue] = useState<React.ReactText>('');
   const [addRemove, setAddRemove] = useState(false);
 
-  const { fieldName, registerField, defaultValue = '' } = useField(name);
+  const { fieldName, registerField, defaultValue = '', error } = useField(name);
   const pickerValueRef = useRef<InputValueReference>({ value: defaultValue });
 
   const handlePickerChange = useCallback(
@@ -78,7 +78,7 @@ const PickerComponent: React.FC<PickerProps> = ({
   }, [defaultValue]);
 
   return addRemove ? (
-    <PickerContainer>
+    <PickerContainer isErrored={!!error}>
       <Picker
         ref={pickerRef}
         selectedValue={selectedValue}
@@ -110,7 +110,7 @@ const PickerComponent: React.FC<PickerProps> = ({
       </Picker>
     </PickerContainer>
   ) : (
-    <PickerContainer>
+    <PickerContainer isErrored={!!error}>
       <Picker
         ref={pickerRef}
         selectedValue={selectedValue}

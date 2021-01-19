@@ -11,6 +11,7 @@ import { Container, TextInput } from './styles';
 
 interface InputProps extends TextInputProps {
   name: string;
+  rawValue?: string;
 }
 
 interface InputValueReference {
@@ -22,12 +23,12 @@ interface InputRef {
 }
 
 const Input: React.ForwardRefRenderFunction<InputRef, InputProps> = (
-  { name, onChangeText, ...rest },
+  { name, onChangeText, rawValue, ...rest },
   ref,
 ) => {
   const inputRef = useRef<any>(null);
 
-  const { fieldName, registerField, defaultValue = '' } = useField(name);
+  const { fieldName, registerField, defaultValue = '', error } = useField(name);
   const inputValueRef = useRef<InputValueReference>({ value: defaultValue });
 
   useEffect(() => {
@@ -44,7 +45,7 @@ const Input: React.ForwardRefRenderFunction<InputRef, InputProps> = (
     registerField<string>({
       name: fieldName,
       ref: inputValueRef.current,
-      path: 'value',
+      // path: 'value',
       clearValue() {
         inputValueRef.current.value = '';
         inputRef.current.clear();
@@ -53,8 +54,11 @@ const Input: React.ForwardRefRenderFunction<InputRef, InputProps> = (
         inputValueRef.current.value = value;
         inputRef.current.setNativeProps({ text: value });
       },
+      getValue(inputRefGet) {
+        return rawValue || inputRefGet.value;
+      },
     });
-  }, [fieldName, registerField]);
+  }, [fieldName, registerField, rawValue]);
 
   const handleOnChange = useCallback(
     value => {
@@ -68,7 +72,7 @@ const Input: React.ForwardRefRenderFunction<InputRef, InputProps> = (
   );
 
   return (
-    <Container>
+    <Container isErrored={!!error}>
       <TextInput
         ref={inputRef}
         keyboardAppearance="dark"

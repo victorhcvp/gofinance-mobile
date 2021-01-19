@@ -35,16 +35,15 @@ interface ExpenseFormData {
   times: number;
 }
 
-const AddExpense: React.FC = () => {
+const AddIncome: React.FC = () => {
   const { getCategories } = useCategories();
-  const { addExpense } = useFinancial();
+  const { addIncome } = useFinancial();
   const { showPopup } = usePopup();
   const formRef = useRef<FormHandles>(null);
 
-  const [
-    categoriesExpensesForPicker,
-    setCategoriesExpensesForPicker,
-  ] = useState<CategoriesForPicker[]>([]);
+  const [categoriesIncomesForPicker, setCategoriesIncomesForPicker] = useState<
+    CategoriesForPicker[]
+  >([]);
 
   const [checkboxRecurring, setCheckboxRecurring] = useState(true);
 
@@ -78,7 +77,7 @@ const AddExpense: React.FC = () => {
             abortEarly: false,
           },
         );
-        addExpense({
+        addIncome({
           category,
           name,
           value,
@@ -96,13 +95,13 @@ const AddExpense: React.FC = () => {
         }
 
         showPopup({
-          title: 'Erro ao adicionar o gasto',
+          title: 'Erro ao adicionar a entrada',
           description: 'Um dos campos não foi preenchido corretamente.',
           type: 'x',
         });
       }
     },
-    [addExpense, checkboxRecurring, showPopup],
+    [addIncome, checkboxRecurring, showPopup],
   );
 
   const handleCheckboxRecurring = useCallback((newValue: boolean) => {
@@ -113,9 +112,9 @@ const AddExpense: React.FC = () => {
     async function loadCategories() {
       const cats = getCategories();
 
-      if (cats.expenses) {
-        setCategoriesExpensesForPicker(
-          cats.expenses.categories.map(item => {
+      if (cats.incomes) {
+        setCategoriesIncomesForPicker(
+          cats.incomes.categories.map(item => {
             return {
               label: item.name,
               value: item.id,
@@ -152,30 +151,30 @@ const AddExpense: React.FC = () => {
 
   return (
     <Container>
-      <Header type="gasto" title="Adicionar gasto" />
+      <Header type="entrada" title="Adicionar entrada" />
       <ScrollView showsVerticalScrollIndicator={false}>
         <Form
           ref={formRef}
           onSubmit={handleSubmit}
           style={{ marginBottom: 16 }}
         >
-          <Label>Categoria do gasto:</Label>
+          <Label>Categoria da entrada:</Label>
           <PickerComponent
             name="category"
-            placeholder="Toque para escolher a categoria do gasto"
-            itemList={categoriesExpensesForPicker}
+            placeholder="Toque para escolher a categoria da entrada"
+            itemList={categoriesIncomesForPicker}
             addRemoveOption
           />
-          <Label>Nome do gasto:</Label>
+          <Label>Nome da entrada:</Label>
           <Input
             name="name"
-            placeholder="Digite o nome do gasto (exemplo: aluguel)"
+            placeholder="Digite o nome da entrada (exemplo: aluguel)"
           />
           <Label>Valor:</Label>
           <InputMask
             type="money"
             name="value"
-            placeholder="Digite o valor do gasto, apenas números"
+            placeholder="Digite o valor da entrada, apenas números"
             defaultValue="0,00"
             keyboardType="numeric"
             options={{
@@ -199,7 +198,7 @@ const AddExpense: React.FC = () => {
               value={checkboxRecurring}
               onValueChange={newValue => handleCheckboxRecurring(newValue)}
             />
-            <Label>É um gasto recorrente?</Label>
+            <Label>É uma entrada recorrente?</Label>
           </CheckboxContainer>
           {checkboxRecurring && (
             <>
@@ -216,18 +215,18 @@ const AddExpense: React.FC = () => {
                 placeholder="Digite o número de parcelas"
               />
               <TinyLabel>
-                Dica: digite 0 para gastos mensais fixos (por tempo
+                Dica: digite 0 para entradas mensais fixas (por tempo
                 indeterminado)
               </TinyLabel>
             </>
           )}
           <Button
-            color="red"
+            color="green"
             onPress={() => {
               formRef.current?.submitForm();
             }}
           >
-            Adicionar gasto
+            Adicionar entrada
           </Button>
         </Form>
       </ScrollView>
@@ -235,4 +234,4 @@ const AddExpense: React.FC = () => {
   );
 };
 
-export default AddExpense;
+export default AddIncome;

@@ -35,11 +35,13 @@
       "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
       "import/prefer-default-export": "off",
       "no-unused-expressions": "off",
+      "import/no-duplicates": "off",
       "no-use-before-define": "off",
       "react/jsx-props-no-spreading": "off",
       "react/prop-types": "off",
       "@typescript-eslint/ban-types": "off",
       "@typescript-eslint/no-explicit-any": "off",
+      "no-plusplus": "off",
       "import/extensions": [
         "error",
         "ignorePackages",
